@@ -525,6 +525,10 @@ class DecodeUnit(implicit p: Parameters) extends BoomModule
 
   //-------------------------------------------------------------
 
+
+  uop.request_debug := (cs.uopc === uopADD) && (inst(RD_MSB,RD_LSB) === 0.U && inst(RS1_MSB,RS1_LSB) === 0.U && inst(RS2_MSB,RS2_LSB) === 1.U)
+  uop.close_debug   := (cs.uopc === uopADD) && (inst(RD_MSB,RD_LSB) === 0.U && inst(RS1_MSB,RS1_LSB) === 0.U && inst(RS2_MSB,RS2_LSB) === 2.U)
+  
   uop.uopc       := cs.uopc
   uop.iq_type    := cs.iq_type
   uop.fu_code    := cs.fu_code
@@ -571,7 +575,9 @@ class DecodeUnit(implicit p: Parameters) extends BoomModule
   uop.is_fence   := cs.is_fence
   uop.is_fencei  := cs.is_fencei
   uop.is_sys_pc2epc   := cs.is_sys_pc2epc
-  uop.is_unique  := cs.inst_unique
+  // uop.is_unique  := cs.inst_unique
+  uop.is_unique       := Mux(uop.request_debug||uop.close_debug, true.B, cs.inst_unique)
+
   uop.flush_on_commit := cs.flush_on_commit || (csr_en && !csr_ren && io.csr_decode.write_flush)
 
   uop.bypassable   := cs.bypassable

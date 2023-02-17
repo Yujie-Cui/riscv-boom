@@ -146,6 +146,10 @@ class CommitExceptionSignals(implicit p: Parameters) extends BoomBundle
   val badvaddr   = UInt(xLen.W)
 // The ROB needs to tell the FTQ if there's a pipeline flush (and what type)
 // so the FTQ can drive the frontend with the correct redirected PC.
+
+  val start_debug= Bool()
+  val close_debug = Bool()
+
   val flush_typ  = FlushTypes()
 }
 
@@ -586,6 +590,20 @@ class Rob(
                                                 flush_commit && flush_uop.uopc === uopERET,
                                                 refetch_inst)
 
+  io.flush.bits.start_debug  := flush_uop.request_debug
+  io.flush.bits.close_debug := flush_uop.close_debug 
+    //debug: show the mode switch instruction information
+    when(flush_uop.request_debug){
+      dbg(
+        "type" -> "switch to print debug info",
+      )
+    }
+
+    when(flush_uop.close_debug){
+      dbg(
+        "type" -> "stop to print debug info",
+      )
+    }
 
   // -----------------------------------------------
   // FP Exceptions

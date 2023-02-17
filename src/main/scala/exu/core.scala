@@ -381,6 +381,23 @@ class BoomCore()(implicit p: Parameters) extends BoomModule
     (RegNext(dec_valids(i) && dec_uops(i).is_jalr && csr.io.status.debug))
   }.reduce(_||_)
 
+
+  val debug_mode = RegInit(false.B)
+  when (RegNext(rob.io.flush.valid)) {
+    when (RegNext(rob.io.flush.bits.start_debug)){
+      debug_mode := true.B
+      dbg(
+        "type" -> "Enter debug print Mode",
+      )
+    }
+    when (RegNext(rob.io.flush.bits.close_debug)){
+      debug_mode := false.B
+      dbg(
+        "type" -> "Exit debug print Mode",
+      )
+    }
+  }
+
   // TODO FIX THIS HACK
   // The below code works because of two quirks with the flush mechanism
   //  1 ) All flush_on_commit instructions are also is_unique,
